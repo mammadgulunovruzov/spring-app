@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Students</title>
+    <link rel="stylesheet" href="bootstrap_style.css">
+    <script src="app.js" ></script>
+    <script>
+        function getAllStudents() {
+            var cavabGelende = function() {
+
+                if (this.readyState == 4 && this.status == 200) {
+                    var response = JSON.parse(this.responseText);
+                    var students = response.data;
+                    var tblRows = document.getElementById("tblRows");
+                    var tblRow = document.getElementById("tblRow").innerHTML;
+                    tblRows.innerHTML = "";
+                    for(var i=0;i<students.length;i++) {
+                        var teacher = students[i];
+                        var filledTblRow = tblRow
+                            .replace(":name", teacher.name)
+                            .replace(":surname", teacher.surname)
+                            .replace(":university", teacher.universityId)
+                            .replace(":scholarship", teacher.scholarship)
+                            .replace(":id", teacher.id)
+                            .replace(":idForUpdate", teacher.id)
+                        ;
+                        tblRows.innerHTML+= filledTblRow;
+                    }
+                }
+            };
+            var name = document.getElementById("name").value;
+            var surname = document.getElementById("surname").value;
+            var scholarship = document.getElementById("scholarship").value;
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = cavabGelende;
+            xhttp.open("GET", "http://localhost:8080/students?name="+name+"&surname="+surname+"&scholarship="+scholarship, true);
+            xhttp.send();
+        }
+
+        var selectedId;
+
+        function selectItem(id) {
+            this.selectedId = id;
+        }
+
+        function deleteItem() {
+            var cavabGelende = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    getAllStudents();
+                }
+            };
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = cavabGelende;
+            xhttp.open("DELETE", "http://localhost:8080/students?id="+selectedId, true);
+            xhttp.send();
+        }
+
+        function selectItemForUpdate(id) {
+            selectedId = id;
+            var cavabGelende = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var response = JSON.parse(this.responseText);
+                    var teacher = response.data;
+                    document.getElementById("nameUpdate").value = teacher.name;
+                    document.getElementById("surnameUpdate").value = teacher.surname;
+                    document.getElementById("scholarshipUpdate").value = teacher.scholarship;
+                    document.getElementById("universityUpdate").value = teacher.universityId;
+                }
+            };
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = cavabGelende;
+            xhttp.open("GET", "http://localhost:8080/students/"+selectedId, true);
+            xhttp.send();
+        }
+
+        function updateItem() {
+            var cavabGelende = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    getAllStudents();
+                }
+            };
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onreadystatechange = cavabGelende;
+            xhttp.open("PUT", "http://localhost:8080/students", true);
+            xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhttp.send(JSON.stringify({
+                id: selectedId,
+                name: document.getElementById("nameUpdate").value,
+                surname: document.getElementById("surnameUpdate").value,
+                scholarship: document.getElementById("scholarshipUpdate").value,
+                universityId: document.getElementById("universityUpdate").value,
+            }));
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                </li>
+                <li class="nav-item" onclick="foo()">
+                    <a class="nav-link" href="#">Students</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Students</a>
+                </li>
+            </ul>
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+            <form class="d-flex" action="/webapp/logout.jsp">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">LOGOUT</button>
+            </form>
+        </div>
+    </div>
+</nav>
+<h1>Students</h1>
+<div id="form" class="col-3 m-lg-3">
+    <div class="mb-3">
+        <label class="form-label" for="name" >
+            name
+        </label>
+        <input class="form-control" name="name" id="name" type="text"/>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="surname" >
+            surname
+        </label>
+        <input class="form-control" name="surname" id="surname" type="text"/>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="scholarship" >
+            scholarship
+        </label>
+        <input class="form-control" name="scholarship" id="scholarship" type="text"/>
+    </div>
+
+
+    <button onclick="getAllStudents()" class="btn btn-primary">SEARCH</button>
+</div>
+<br/>
+<br/>
+<br/>
+<div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>name</th>
+            <th>surname</th>
+            <th>university</th>
+            <th>scholarship</th>
+            <th>actions</th>
+        </tr>
+        </thead>
+        <tbody id="tblRows">
+
+        </tbody>
+    </table>
+</div>
+
+<div style="display: none" >
+    <table>
+        <tbody id="tblRow">
+        <tr >
+            <td>
+                :name
+            </td>
+            <td>
+                :surname
+            </td>
+            <td>
+                :university
+            </td>
+            <td>
+                :scholarship
+            </td>
+            <td>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalDelete"  onclick="selectItem(:id)">delete</button>
+            </td>
+            <td>
+                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalUpdate" onclick="selectItemForUpdate(:idForUpdate)">update</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<!-- Delete Modal -->
+<div class="modal fade" id="modalDelete" tabindex="-1" aria-labelledby="modalDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDeleteLabel">Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure to delete?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteItem()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div class="modal fade" id="modalUpdate" tabindex="-1" aria-labelledby="modalUpdateLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalUpdateLabel">Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="form" class="col-3 m-lg-3">
+                    <div class="mb-3">
+                        <label class="form-label" for="nameUpdate" >
+                            name
+                        </label>
+                        <input class="form-control" name="name" id="nameUpdate" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="surnameUpdate" >
+                            surname
+                        </label>
+                        <input class="form-control" name="surname" id="surnameUpdate" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="scholarshipUpdate" >
+                            scholarship
+                        </label>
+                        <input class="form-control" name="scholarship" id="scholarshipUpdate" type="text"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="universityUpdate" >
+                            university
+                        </label>
+                        <input class="form-control" name="surname" id="universityUpdate" type="text"/>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="updateItem()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script>
+    var btnStudents = document.getElementById("btnStudents");
+    btnStudents.onclick = getAllStudents;
+</script>
+</html>
